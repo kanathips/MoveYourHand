@@ -12,11 +12,19 @@ using namespace std;
 const char *setwin_name = "Setting";
 const char *imgshow_name = "Original Image";
 
+image capture;
 void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
-     if  ( event == EVENT_LBUTTONDOWN )
+     if  ( event == EVENT_LBUTTONDOWN  && x >= 1 && x >= 1 && x <= capture.img.cols - 1 && y <= capture.img.rows - 1)
      {
-
+         int i, temp[3] = {1, 0 , -1}, j = 0, loop = 0;
+         while (loop < 8)
+            for(i = 0; i < 3; i++)
+            {
+                cout << capture.img.at<Vec3b>(Point(x + temp[j], y + temp[i])) << endl;
+                j++;
+                loop++;
+            }
      }
 }
 
@@ -25,16 +33,7 @@ int main()
     Mat cvt_Mat;
     double tmp_posi_x = -1, tmp_posi_y = -1;
     win_cre win(setwin_name);
-    image capture;
     namedWindow(imgshow_name, WINDOW_AUTOSIZE);
-    Mat Avg;
-    while(true)
-    {
-        capture.update();
-        setMouseCallback(imgshow_name, CallBackFunc, Avg);
-    }
-
-
 
     while(waitKey(30) != 27) //delay 30 millisecond for show image
     {
@@ -66,6 +65,7 @@ int main()
             tmp_posi_x = posi_x;
             tmp_posi_y = posi_y;
         }
+        setMouseCallback(imgshow_name, CallBackFunc, NULL);
 
         imshow(imgshow_name, capture.img);
         imshow("Two", cvt_Mat);
