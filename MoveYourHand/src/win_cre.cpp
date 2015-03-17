@@ -28,7 +28,7 @@ win_cre::win_cre(char *img_name, char *denois_name)
     denois_win = denois_name;
 }
 
-void win_cre::update_hsv(Vec3b avg_hsv)
+void win_cre::update_hsv(Vec3b avg_hsv)  //set lower bound and upper bound by avg HSV color with vector
 {
     low_h = avg_hsv[0] - 10;
     most_h = avg_hsv[0] + 10;
@@ -36,9 +36,10 @@ void win_cre::update_hsv(Vec3b avg_hsv)
     most_s = avg_hsv[1] + 10;
     low_v = avg_hsv[2] - 10;
     most_v = avg_hsv[2] + 10;
+    update_trackbar();
 }
 
-void win_cre::update_hsv(int avg_h, int avg_s, int avg_v)
+void win_cre::update_hsv(int avg_h, int avg_s, int avg_v) //set lower bound and upper bound by avg HSV color with each chanal average
 {
     low_h = avg_h - 10;
     most_h = avg_h + 10;
@@ -46,6 +47,12 @@ void win_cre::update_hsv(int avg_h, int avg_s, int avg_v)
     most_s = avg_s + 10;
     low_v = avg_v - 10;
     most_v = avg_v + 10;
+    update_trackbar();
+}
+
+void win_cre::update_trackbar() // function to update trackbar position
+{
+
     setTrackbarPos("Lowest H", img_win, low_h);
     setTrackbarPos("Most H", img_win, most_h);
     setTrackbarPos("Lowest S", img_win, low_s);

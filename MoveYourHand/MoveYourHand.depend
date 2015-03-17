@@ -198,14 +198,14 @@
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/opencv.hpp>
 
-1426577752 source:c:\users\newwy\desktop\moveyourhand\main.cpp
+1426565603 source:c:\users\newwy\desktop\moveyourhand\main.cpp
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 	<opencv2/opencv.hpp>
 	<image.h>
 	<win_cre.h>
+	<setting.h>
 	<iostream>
-	<windows.h>
 
 1426434903 source:c:\users\newwy\desktop\moveyourhand\src\camera.cpp
 	"image.h"
@@ -243,6 +243,8 @@
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 
+1426472627 D
+
 1426602860 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\src\image.cpp
 	"image.h"
 	<win_cre.h>
@@ -262,7 +264,7 @@
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 
-1426605735 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\main.cpp
+1426610426 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\main.cpp
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 	<opencv2/opencv.hpp>
@@ -560,4 +562,8 @@
 	"opencv2/core/core.hpp"
 	"opencv2/highgui/highgui_c.h"
 	"opencv2/highgui/highgui.hpp"
+
+1384335861 ighgui/highgui.hpp"
+
+1384335861 ent of 56fa1fc... Add Function
 

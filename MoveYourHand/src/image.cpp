@@ -4,7 +4,7 @@
 
 using namespace cv;
 
-image::image(int camera)
+image::image(int camera) // constructor of image class
 {
     camera_no = camera;
     cap = VideoCapture(camera);
@@ -14,14 +14,14 @@ image::image(int camera)
     height = img.cols;
 }
 
-void image::update()
+void image::update() //read image form camera I call this update function
 {
     cap.read(img);
-    flip(img, img, 1);
+    flip(img, img, 1); //flip image if you don't do like this you'll get mirrored image
 }
 
 void image::cal_bin_img(Mat &img_out, Scalar scalar_low, Scalar scalar_up)
 {
-    cvtColor(img, cvt_hsv, CV_BGR2HSV);
-    inRange(cvt_hsv, scalar_low, scalar_up, img_out);
+    cvtColor(img, cvt_hsv, CV_BGR2HSV); // Convert from BGR to HSV
+    inRange(cvt_hsv, scalar_low, scalar_up, img_out); //Cut the colors are not in this range out. result is binary image
 }
