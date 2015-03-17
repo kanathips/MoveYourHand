@@ -5,23 +5,51 @@
 
 using namespace cv;
 
-win_cre::win_cre(const char *win_name)
+win_cre::win_cre(char *img_name, char *denois_name)
 {
-    namedWindow(win_name, WINDOW_AUTOSIZE);
+    namedWindow(img_name, WINDOW_AUTOSIZE);
 
     //Change HSV value
-    createTrackbar("Lowest H", win_name, &low_h ,255);
-    createTrackbar("Most H", win_name, &most_h ,255);
-    createTrackbar("Lowest S", win_name, &low_s ,255);
-    createTrackbar("Most S", win_name, &most_s ,255);
-    createTrackbar("Lowest V", win_name, &low_v ,255);
-    createTrackbar("Most V", win_name, &most_v ,255);
+    createTrackbar("Lowest H", img_name, &low_h ,255);
+    createTrackbar("Most H", img_name, &most_h ,255);
+    createTrackbar("Lowest S", img_name, &low_s ,255);
+    createTrackbar("Most S", img_name, &most_s ,255);
+    createTrackbar("Lowest V", img_name, &low_v ,255);
+    createTrackbar("Most V", img_name, &most_v ,255);
 
     //Change size of erode and dilate
-    namedWindow("Dil_and_Erd", WINDOW_AUTOSIZE);
-    createTrackbar("Dilate X", "Dil_and_Erd", &dil_x ,20);
-    createTrackbar("Dilate Y", "Dil_and_Erd", &dil_y ,20);
-    createTrackbar("Erode X", "Dil_and_Erd", &erd_x ,20);
-    createTrackbar("Erode Y", "Dil_and_Erd", &erd_y ,20);
+    namedWindow(denois_name, WINDOW_AUTOSIZE);
+    createTrackbar("Open X", denois_name, &opn_x ,20);
+    createTrackbar("Open Y", denois_name, &opn_y ,20);
+    createTrackbar("Close X", denois_name, &cls_x ,20);
+    createTrackbar("Close Y", denois_name, &cls_y ,20);
 
+    img_win = img_name;
+    denois_win = denois_name;
+}
+
+void win_cre::update_hsv(Vec3b avg_hsv)
+{
+    low_h = avg_hsv[0] - 10;
+    most_h = avg_hsv[0] + 10;
+    low_s = avg_hsv[1] - 10;
+    most_s = avg_hsv[1] + 10;
+    low_v = avg_hsv[2] - 10;
+    most_v = avg_hsv[2] + 10;
+}
+
+void win_cre::update_hsv(int avg_h, int avg_s, int avg_v)
+{
+    low_h = avg_h - 10;
+    most_h = avg_h + 10;
+    low_s = avg_s - 10;
+    most_s = avg_s + 10;
+    low_v = avg_v - 10;
+    most_v = avg_v + 10;
+    setTrackbarPos("Lowest H", img_win, low_h);
+    setTrackbarPos("Most H", img_win, most_h);
+    setTrackbarPos("Lowest S", img_win, low_s);
+    setTrackbarPos("Most S", img_win, most_s);
+    setTrackbarPos("Lowest V", img_win, low_v);
+    setTrackbarPos("Most V", img_win, most_v);
 }
