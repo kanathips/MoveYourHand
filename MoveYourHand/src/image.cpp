@@ -6,14 +6,16 @@ using namespace cv;
 
 image::image(int camera) // constructor of image class
 {
-    camera_no = camera;
     cap = VideoCapture(camera);
     cap.read(img);
     flip(img, img, 1);
     width = img.rows;
     height = img.cols;
 }
-
+void image::change_camera(int camera_no)
+{
+    cap = VideoCapture(camera_no);
+}
 void image::update() //read image form camera I call this update function
 {
     cap.read(img);

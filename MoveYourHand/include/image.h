@@ -10,11 +10,11 @@ class image
 {
     public:
         Mat img, cvt_hsv;
-        int camera_no;
         int width, height;
         VideoCapture cap;
         image(int camera_no);
         void update();
+        void change_camera(int camera_no);
         void cal_bin_img(Mat &img_out, Scalar scalar_low, Scalar scalar_up);
 };
 

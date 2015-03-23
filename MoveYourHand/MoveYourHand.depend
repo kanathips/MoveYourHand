@@ -245,33 +245,34 @@
 
 1426472627 D
 
-1426602860 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\src\image.cpp
+1426657200 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\src\image.cpp
 	"image.h"
 	<win_cre.h>
 	<setting.h>
 
-1426602891 c:\users\newwy\documents\github\moveyourhand\moveyourhand\include\image.h
+1426617184 c:\users\newwy\documents\github\moveyourhand\moveyourhand\include\image.h
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 
 1426602477 c:\users\newwy\documents\github\moveyourhand\moveyourhand\include\setting.h
 
-1426606100 c:\users\newwy\documents\github\moveyourhand\moveyourhand\include\win_cre.h
+1427094955 c:\users\newwy\documents\github\moveyourhand\moveyourhand\include\win_cre.h
 	<opencv2/imgproc/imgproc.hpp>
 
-1426605685 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\src\win_cre.cpp
+1427095225 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\src\win_cre.cpp
 	"win_cre.h"
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 
-1426610426 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\main.cpp
+1427097644 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\main.cpp
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
-	<opencv2/opencv.hpp>
 	<image.h>
+	<windows.h>
 	<win_cre.h>
 	<iostream>
 	<windows.h>
+	<stdio.h>
 
 1384335861 c:\opencv\build\x86\install\include\opencv\cv.h
 	"opencv2/core/core_c.h"
