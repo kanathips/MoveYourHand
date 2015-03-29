@@ -12,16 +12,16 @@ using namespace std;
 
 /**< Declare Window name *///
 
-char *setwin_name = "Setting";
-char *denois_winname = "Denoising";
-char *imgshow_name = "Original Image";
-int click_cout = 0;
-int sample = 5;
+const char *setwin_name = "HSV";
+const char *denois_winname = "Denois";
+const char *imgshow_name = "Original Image";
+int click_count = 0;
+const int sample = 5;
 vector<vector<int> > Clikc_position;
-
-/**< Create window and image command */
-image capture(1); // look image.h and image.cpp
-win_cre win(setwin_name, denois_winname); // look at win_cre.h and win_cre.cpp
+int avg_color[sample][3];
+win_cre win(setwin_name);
+Scalar low_hsv, most_hsv;
+image capture;
 
 vector<int> mean_color()
 {
@@ -47,6 +47,7 @@ vector<int> mean_color()
             }
             j = 0;
         }
+        loop = 0;
     }
     avg_color.push_back(avg_h / (9 * sample));
     avg_color.push_back(avg_s / (9 * sample));
@@ -61,66 +62,81 @@ void callback_click_posi(int event, int x, int y, int flags, void* userdata)
     {
         x_y.push_back(x);
         x_y.push_back(y);
-        click_cout++;
+        click_count++;
         Clikc_position.push_back(x_y);
     }
 }
 
-void caribate_color()
+void show_text(Mat img, string text)
 {
-    char text[100];
-    int i, j, x, y;
-    vector<int> print_test;
-    while(waitKey(30 != 27) && click_cout != sample)
+	putText(img, text, Point(img.cols / 10, img.rows / 10), FONT_HERSHEY_PLAIN, 2.0f,Scalar(0,0,255),2);
+}
+
+void caribate_color(image cap)
+{
+    char time[50];
+    while(waitKey(30) != 27 && click_count != sample)
     {
-        capture.update();
-        sprintf(text, "Please click on your hand %d Time", sample - click_cout);
-        imshow(imgshow_name, capture.img);
+        cap.update();
+        sprintf(time, "Click on your hand %d times.", sample - click_count);
+        string text = string(time);
+        show_text(cap.img, text);
+        imshow(imgshow_name, cap.img);
         setMouseCallback(imgshow_name, callback_click_posi, NULL);
     }
+    win.show_hsv_set();
     win.update_hsv(mean_color());
+    while(waitKey(30) != 9)
+    {
+        cap.update();
+        low_hsv = Scalar(win.low_h, win.low_s, win.low_v);
+        most_hsv = Scalar(win.most_h, win.most_s, win.most_v);
+        capture.cal_bin_img(cap.src, low_hsv, most_hsv);
+        string text = string("Press TAB to finish.");
+        show_text(cap.src, text);
+        imshow(imgshow_name, cap.src);
+    }
+    destroyWindow(win.img_win);
 }
 
 int main()
 {
-    Mat cvt_Mat;
-    double tmp_posi_x = -1, tmp_posi_y = -1;
-    int y_scale = round(GetSystemMetrics(SM_CYSCREEN) / capture.height);
-    int x_scale = round(GetSystemMetrics(SM_CXSCREEN) / capture.width);
-
+    int camera_no;
+    double object_area;
+    Moments object;
+    while(1)
+    {
+        printf("Please Enter Your Camera Number: ");
+        scanf("%d", &camera_no);
+        capture.setup_camera(camera_no);
+        if(!capture.cap.isOpened())
+            printf("Sorry your camera is not open.\nPlease try again.\n\n");
+        else
+            break;
+    }
+    double y_scale = ceil(GetSystemMetrics(SM_CYSCREEN) / capture.width);
+    double x_scale = ceil(GetSystemMetrics(SM_CXSCREEN) / capture.height);
     namedWindow(imgshow_name, WINDOW_AUTOSIZE); //create window named Original Image
-    caribate_color();
-
+    caribate_color(capture);
     while(waitKey(30) != 27) //loop until catch esc key
     {
-        Scalar low_hsv(win.low_h, win.low_s, win.low_v); //Create Scalar contain lower bound of HSV color
-        Scalar most_hsv(win.most_h, win.most_s, win.most_v); //Create Scalar contain upper bound of HSV color
-
         capture.update(); //update Video frame (look at image.cpp)
+        capture.cal_bin_img(capture.src, low_hsv, most_hsv); //convert HSV image to Binary image (capture.src is output argument)
+        Canny(capture.src, capture.contour, 10, 10);
 
-        capture.cal_bin_img(cvt_Mat, low_hsv, most_hsv); //convert HSV image to Binary image (cvt_Mat is output argument)
-
-        morphologyEx(cvt_Mat, cvt_Mat, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(win.opn_x, win.opn_y))); //Function to fill noisy image
-        morphologyEx(cvt_Mat, cvt_Mat, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(win.cls_x, win.cls_y))); //Function to cut the noises out
-
-        Moments moment_cvt = moments(cvt_Mat, 1);
-        double area = moment_cvt.m00; //area of white color of Binary image
-        double moment01 = moment_cvt.m01; // Y axis of white space of Binary image
-        double moment10 = moment_cvt.m10;// X axis of white space of Binary image
-
-        if (area > 10000) // if area are more than 10000
+        object = capture.bigest_object(object_area);
+        /**
+                    Mouse Control
+        int posi_x = object.m10 / object_area; // find center of x axis
+        int posi_y = object.m01 / object_area; // find center of y axis
+        if(posi_x > 0 && posi_y > 0)
         {
-            int posi_x = moment10 / area; // find center of x axis
-            int posi_y = moment01 / area; // find center of y axis
-
             circle(capture.img, Point(posi_x, posi_y), 10, Scalar(0, 255, 0), -1); //Draw a green circle in the center of binary image
-
-            tmp_posi_x = posi_x; //store old position in temp
-            tmp_posi_y = posi_y;
+            SetCursorPos(round(x_scale * (posi_x - 100) * 2), round(y_scale * (posi_y - 100) * 3));
         }
-
+        */
         imshow(imgshow_name, capture.img); //Show Original image
-        imshow("Two", cvt_Mat); // Show Binary image
+        imshow("Two", capture.src); // Show Binary image
     }
     return 1;
 }
