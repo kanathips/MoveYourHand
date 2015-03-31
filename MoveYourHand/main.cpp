@@ -4,7 +4,6 @@
 #include <windows.h>
 #include <win_cre.h>
 #include <iostream>
-#include <windows.h>
 #include <stdio.h>
 
 using namespace cv;
@@ -99,11 +98,40 @@ void caribate_color(image cap)
     destroyWindow(win.img_win);
 }
 
+string check_move(int posi_x[2], int posi_y[2], int x_scale, int y_scale)
+{
+    string move_way;
+    if(posi_x[0] > posi_x[1] + 10 * x_scale)
+    {
+        move_way = "Move Right";
+        if(posi_y[0] > posi_y[1] +  10 * y_scale)
+            move_way += " And Down";
+        else if(posi_y[0] < posi_y[1] -  10 * y_scale)
+            move_way += " And Up";
+    }
+    else if(posi_x[0] < posi_x[1] - 10 * x_scale)
+    {
+        move_way = "Move Left";
+        if(posi_y[0] > posi_y[1] +  10 * y_scale)
+            move_way += " And Down";
+        else if(posi_y[0] < posi_y[1] -  10 * y_scale)
+            move_way += " And Up";
+    }
+    else
+    {
+        if(posi_y[0] > posi_y[1] +  10 * y_scale)
+            move_way =  "Move Down";
+        else if(posi_y[0] < posi_y[1] -  10 * y_scale)
+            move_way = "Move Up";
+    }
+    return move_way;
+}
 int main()
 {
     int camera_no;
     double object_area;
-    Moments object;
+    vector<Point> object;
+    Moments object_moment;
     while(1)
     {
         printf("Please Enter Your Camera Number: ");
@@ -116,27 +144,30 @@ int main()
     }
     double y_scale = ceil(GetSystemMetrics(SM_CYSCREEN) / capture.width);
     double x_scale = ceil(GetSystemMetrics(SM_CXSCREEN) / capture.height);
+    int posi_x[2] = {0}, posi_y[2] = {0};
     namedWindow(imgshow_name, WINDOW_AUTOSIZE); //create window named Original Image
     caribate_color(capture);
     while(waitKey(30) != 27) //loop until catch esc key
     {
         capture.update(); //update Video frame (look at image.cpp)
+
         capture.cal_bin_img(capture.src, low_hsv, most_hsv); //convert HSV image to Binary image (capture.src is output argument)
         Canny(capture.src, capture.contour, 10, 10);
 
-        object = capture.bigest_object(object_area);
-        /**
-                    Mouse Control
-        int posi_x = object.m10 / object_area; // find center of x axis
-        int posi_y = object.m01 / object_area; // find center of y axis
-        if(posi_x > 0 && posi_y > 0)
-        {
-            circle(capture.img, Point(posi_x, posi_y), 10, Scalar(0, 255, 0), -1); //Draw a green circle in the center of binary image
-            SetCursorPos(round(x_scale * (posi_x - 100) * 2), round(y_scale * (posi_y - 100) * 3));
-        }
-        */
+        object = capture.bigest_object();
+        object_moment = moments(object);
+
+        posi_x[0] = object_moment.m10 / object_moment.m00; // find center of x axis
+        posi_y[0] = object_moment.m01 / object_moment.m00; // find center of y axis
+        if(posi_x[0] > 0 && posi_y[0] > 0)
+            circle(capture.img, Point(posi_x[0], posi_y[0]), 10, Scalar(0, 255, 0), -1); //Draw a green circle in the center of binary image
+        show_text(capture.img, check_move(posi_x, posi_y, x_scale, y_scale));
+
+        posi_x[1] = posi_x[0];
+        posi_y[1] = posi_y[0];
+
         imshow(imgshow_name, capture.img); //Show Original image
-        imshow("Two", capture.src); // Show Binary image
+        imshow("Two", capture.contour); // Show Binary image
     }
     return 1;
 }

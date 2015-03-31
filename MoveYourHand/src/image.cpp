@@ -19,37 +19,32 @@ void image::setup_camera(int camera_no)
 }
 void image::update() //read image form camera I call this update function
 {
-    cap.read(img);
-    flip(img, img, 1); //flip image if you don't do like this you'll get mirrored image
+    if(cap.isOpened())
+    {
+        cap.read(img);
+        flip(img, img, 1); //flip image if you don't do like this you'll get mirrored image
+    }
 }
 
 void image::cal_bin_img(Mat &img_out, Scalar scalar_low, Scalar scalar_up)
 {
-    blur(img, src, Size(3,3));
-    cvtColor(src, cvt_hsv, CV_BGR2HSV); // Convert from BGR to HSV
+    cvtColor(img, cvt_hsv, CV_BGR2HSV); // Convert from BGR to HSV
     inRange(cvt_hsv, scalar_low, scalar_up, img_out); //Cut the colors are not in this range out. result is binary image
-    morphologyEx(src, src, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(5, 5))); //Function to fill noisy image
-    morphologyEx(src, src, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(5, 5))); //Function to cut the noises out
+    medianBlur(img_out, img_out, 5);
+    morphologyEx(img_out, img_out, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(5, 5))); //Function to fill noisy image
+    morphologyEx(img_out, img_out, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(5, 5))); //Function to cut the noises out
 }
 
-Moments image::bigest_object(double &bigest_area)
+vector<Point> image::bigest_object()
 {
-    vector<vector<Point> > contours_ob;
-    vector<Vec4i> hierarchy;
-    double contour_area[contours_ob.size()], tmp;
-    int i;
-    findContours(contour, contours_ob, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
-    bigest_area = moments(contours_ob[0]).m00;
+    int i, bigest_area = 0;
+    findContours(contour, contours_ob, hierarchy, RETR_TREE , CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-    for(int i = 0; i < contours_ob.size(); i++ )
-    {
-        tmp = moments(contours_ob[i]).m00;
-        if(tmp < bigest_area)
-            continue;
-        circle(img, Point(moments(contours_ob[i]).m10 / tmp, moments(contours_ob[i]).m01 / tmp), 3, Scalar(0, 0, 255), -1);
-        bigest_area = tmp;
-        bigest_contours = moments(contours_ob[i]);
-    }
-    std::cout << bigest_area << " BIG" << std::endl;
+    for(i = 0; i < contours_ob.size(); i++ )
+        if(moments(contours_ob[i]).m00 > bigest_area)
+        {
+            bigest_area = moments(contours_ob[i]).m00;
+            bigest_contours = contours_ob[i];
+        }
     return bigest_contours;
 }
