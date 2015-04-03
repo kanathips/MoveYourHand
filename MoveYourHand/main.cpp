@@ -128,9 +128,11 @@ string check_move(int posi_x[2], int posi_y[2], int x_scale, int y_scale)
 }
 int main()
 {
-    int camera_no;
+    int camera_no, contour_in, i, j;
     double object_area;
     vector<Point> object;
+    vector<Vec4i> hierarchy;
+    vector<vector<Point> > out;
     Moments object_moment;
     while(1)
     {
@@ -154,8 +156,57 @@ int main()
         capture.cal_bin_img(capture.src, low_hsv, most_hsv); //convert HSV image to Binary image (capture.src is output argument)
         Canny(capture.src, capture.contour, 10, 10);
 
-        object = capture.bigest_object();
+        capture.bigest_object(contour_in);
+        object = capture.bigest_contours;
         object_moment = moments(object);
+        if (capture.contours_ob.size() > 0)
+        {
+            vector<vector<Point> >hull( capture.contours_ob.size() );
+			//find the defects points for each contour
+			vector<vector<Vec4i> > defects( capture.contours_ob.size()) ;
+
+			vector<vector<int> > hullsI(capture.contours_ob.size());
+
+			//find the biggest contour
+
+			Point2f rect_points[4];
+			vector<RotatedRect> minRect( capture.contours_ob.size() );
+
+			vector<vector<Point> > contours_poly( capture.contours_ob.size() );
+			vector<Rect> boundRect( capture.contours_ob.size() );
+			try
+			{
+                for(i = 0; i < capture.contours_ob.size(); i++ )
+                {
+                    convexHull( Mat(capture.contours_ob[i]), hull[i], false );
+                    convexHull( Mat(capture.contours_ob[i]), hullsI[i], false );
+                    convexityDefects(Mat(capture.contours_ob[i]),hullsI[i], defects[i]);
+
+                    if(contour_in == i)
+                    {
+                        minRect[i] = minAreaRect( Mat(capture.contours_ob[i]) );
+
+                        drawContours( capture.img, capture.contours_ob,contour_in, CV_RGB(255,255,255), 2, 8, hierarchy,0, Point() );
+                        drawContours( capture.img, hull, contour_in, CV_RGB(255,0,0), 2, 8, hierarchy, 0, Point() );
+
+                        approxPolyDP( Mat(capture.contours_ob[i]), contours_poly[i], 3, true );
+						boundRect[i] = boundingRect( Mat(contours_poly[i]) );
+
+						rectangle( capture.img  , boundRect[i].tl(), boundRect[i].br(), CV_RGB(0,0,0), 2, 8, 0 );
+
+                        Point2f rect_points[4];
+                        minRect[i].points( rect_points );
+
+                        for(j = 0; j < 4; j++ )
+                            line( capture.img, rect_points[j], rect_points[(j+1)%4], CV_RGB(255,255,0), 2, 8 );
+                    }
+                }
+			}
+			catch(Exception ex)
+			{
+			    cout << "error" << endl;
+			}
+        }
 
         posi_x[0] = object_moment.m10 / object_moment.m00; // find center of x axis
         posi_y[0] = object_moment.m01 / object_moment.m00; // find center of y axis
@@ -167,7 +218,7 @@ int main()
         posi_y[1] = posi_y[0];
 
         imshow(imgshow_name, capture.img); //Show Original image
-        imshow("Two", capture.contour); // Show Binary image
+        imshow("Two", capture.src); // Show Binary image
     }
     return 1;
 }

@@ -19,7 +19,7 @@ class image
         void update();
         void setup_camera(int camera_no);
         void cal_bin_img(Mat &img_out, Scalar scalar_low, Scalar scalar_up);
-        vector<Point> bigest_object();
+        void bigest_object(int &contour_in);
 };
 
 #endif // IMAGE_H
