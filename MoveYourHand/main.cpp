@@ -129,7 +129,6 @@ string check_move(int posi_x[2], int posi_y[2], int x_scale, int y_scale)
 int main()
 {
     int camera_no, contour_in, i, j;
-    double object_area;
     vector<Point> object;
     vector<Vec4i> hierarchy;
     vector<vector<Point> > out;
@@ -205,6 +204,40 @@ int main()
 			catch(Exception ex)
 			{
 			    cout << "error" << endl;
+			}
+
+			for( int i = 0; i< capture.contours_ob.size(); i++ )
+			{
+				size_t count = capture.contours_ob[i].size();
+				cout<<"Count : " <<count <<endl;
+				if( count < 300 )
+					continue;
+
+				vector<Vec4i>::iterator d =defects[i].begin();
+
+				while( d!=defects[i].end() ) {
+					Vec4i& v=(*d);
+					if(contour_in == i){
+
+						int startidx=v[0];
+						Point ptStart( capture.contours_ob[i][startidx] ); // point of the contour where the defect begins
+						int endidx=v[1];
+						Point ptEnd( capture.contours_ob[i][endidx] ); // point of the contour where the defect ends
+						int faridx=v[2];
+						Point ptFar( capture.contours_ob[i][faridx] ); // the farthest from the convex hull point within the defect
+						float depth = v[3] / 256; // distance between the farthest point and the convex hull
+
+
+						if(depth > 20 && depth < 80)
+						{
+							line( capture.img, ptStart, ptFar, CV_RGB(0,255,0), 2 );
+							line( capture.img, ptEnd, ptFar, CV_RGB(0,255,0), 2 );
+							circle( capture.img, ptStart,   4, Scalar(100,0,255), 2 );
+						}
+
+					}
+					d++;
+				}
 			}
         }
 
