@@ -5,6 +5,7 @@
 #include <win_cre.h>
 #include <iostream>
 #include <stdio.h>
+#include <hand_function.h>
 
 using namespace cv;
 using namespace std;
@@ -71,6 +72,11 @@ void show_text(Mat img, string text)
 	putText(img, text, Point(img.cols / 10, img.rows / 10), FONT_HERSHEY_PLAIN, 2.0f,Scalar(0,0,255),2);
 }
 
+void show_text(Mat img, string text, Point posi)
+{
+	putText(img, text, posi, FONT_HERSHEY_PLAIN, 2.0f,Scalar(0,0,255),2);
+}
+
 void caribate_color(image cap)
 {
     char time[50];
@@ -126,13 +132,14 @@ string check_move(int posi_x[2], int posi_y[2], int x_scale, int y_scale)
     }
     return move_way;
 }
+
+
 int main()
 {
-    int camera_no, contour_in, i, j;
-    vector<Point> object;
-    vector<Vec4i> hierarchy;
-    vector<vector<Point> > out;
+    int camera_no;
     Moments object_moment;
+    vector<Point> object;
+    int posi_x[2] = {0}, posi_y[2] = {0};
     while(1)
     {
         printf("Please Enter Your Camera Number: ");
@@ -145,111 +152,32 @@ int main()
     }
     double y_scale = ceil(GetSystemMetrics(SM_CYSCREEN) / capture.width);
     double x_scale = ceil(GetSystemMetrics(SM_CXSCREEN) / capture.height);
-    int posi_x[2] = {0}, posi_y[2] = {0};
     namedWindow(imgshow_name, WINDOW_AUTOSIZE); //create window named Original Image
     caribate_color(capture);
+
     while(waitKey(30) != 27) //loop until catch esc key
     {
+        vector<hand_function> fig_vec;
         capture.update(); //update Video frame (look at image.cpp)
-
         capture.cal_bin_img(capture.src, low_hsv, most_hsv); //convert HSV image to Binary image (capture.src is output argument)
         Canny(capture.src, capture.contour, 10, 10);
 
-        capture.bigest_object(contour_in);
-        object = capture.bigest_contours;
-        object_moment = moments(object);
-        if (capture.contours_ob.size() > 0)
+        hand_function hand_cal(capture.contour);
+        hand_cal.find_hull();
+        hand_cal.find_figer(fig_vec);
+        hand_cal.draw(capture.img, fig_vec);
+        if(hand_cal.contours_ob.size() > 0)
         {
-            vector<vector<Point> >hull( capture.contours_ob.size() );
-			//find the defects points for each contour
-			vector<vector<Vec4i> > defects( capture.contours_ob.size()) ;
-
-			vector<vector<int> > hullsI(capture.contours_ob.size());
-
-			//find the biggest contour
-
-			Point2f rect_points[4];
-			vector<RotatedRect> minRect( capture.contours_ob.size() );
-
-			vector<vector<Point> > contours_poly( capture.contours_ob.size() );
-			vector<Rect> boundRect( capture.contours_ob.size() );
-			try
-			{
-                for(i = 0; i < capture.contours_ob.size(); i++ )
-                {
-                    convexHull( Mat(capture.contours_ob[i]), hull[i], false );
-                    convexHull( Mat(capture.contours_ob[i]), hullsI[i], false );
-                    convexityDefects(Mat(capture.contours_ob[i]),hullsI[i], defects[i]);
-
-                    if(contour_in == i)
-                    {
-                        minRect[i] = minAreaRect( Mat(capture.contours_ob[i]) );
-
-                        drawContours( capture.img, capture.contours_ob,contour_in, CV_RGB(255,255,255), 2, 8, hierarchy,0, Point() );
-                        drawContours( capture.img, hull, contour_in, CV_RGB(255,0,0), 2, 8, hierarchy, 0, Point() );
-
-                        approxPolyDP( Mat(capture.contours_ob[i]), contours_poly[i], 3, true );
-						boundRect[i] = boundingRect( Mat(contours_poly[i]) );
-
-						rectangle( capture.img  , boundRect[i].tl(), boundRect[i].br(), CV_RGB(0,0,0), 2, 8, 0 );
-
-                        Point2f rect_points[4];
-                        minRect[i].points( rect_points );
-
-                        for(j = 0; j < 4; j++ )
-                            line( capture.img, rect_points[j], rect_points[(j+1)%4], CV_RGB(255,255,0), 2, 8 );
-                    }
-                }
-			}
-			catch(Exception ex)
-			{
-			    cout << "error" << endl;
-			}
-
-			for( int i = 0; i< capture.contours_ob.size(); i++ )
-			{
-				size_t count = capture.contours_ob[i].size();
-				cout<<"Count : " <<count <<endl;
-				if( count < 300 )
-					continue;
-
-				vector<Vec4i>::iterator d =defects[i].begin();
-
-				while( d!=defects[i].end() ) {
-					Vec4i& v=(*d);
-					if(contour_in == i){
-
-						int startidx=v[0];
-						Point ptStart( capture.contours_ob[i][startidx] ); // point of the contour where the defect begins
-						int endidx=v[1];
-						Point ptEnd( capture.contours_ob[i][endidx] ); // point of the contour where the defect ends
-						int faridx=v[2];
-						Point ptFar( capture.contours_ob[i][faridx] ); // the farthest from the convex hull point within the defect
-						float depth = v[3] / 256; // distance between the farthest point and the convex hull
-
-
-						if(depth > 20 && depth < 80)
-						{
-							line( capture.img, ptStart, ptFar, CV_RGB(0,255,0), 2 );
-							line( capture.img, ptEnd, ptFar, CV_RGB(0,255,0), 2 );
-							circle( capture.img, ptStart,   4, Scalar(100,0,255), 2 );
-						}
-
-					}
-					d++;
-				}
-			}
+            object = hand_cal.bigest_object;
+            object_moment = moments(object);
+            posi_x[0] = object_moment.m10 / object_moment.m00; // find center of x axis
+            posi_y[0] = object_moment.m01 / object_moment.m00; // find center of y axis
+            if(posi_x[0] > 0 && posi_y[0] > 0)
+              circle(capture.img, Point(posi_x[0], posi_y[0]), 10, Scalar(0, 255, 0), -1); //Draw a green circle in the center of binary image
+            show_text(capture.img, check_move(posi_x, posi_y, x_scale, y_scale));
+            posi_x[1] = posi_x[0];
+            posi_y[1] = posi_y[0];
         }
-
-        posi_x[0] = object_moment.m10 / object_moment.m00; // find center of x axis
-        posi_y[0] = object_moment.m01 / object_moment.m00; // find center of y axis
-        if(posi_x[0] > 0 && posi_y[0] > 0)
-            circle(capture.img, Point(posi_x[0], posi_y[0]), 10, Scalar(0, 255, 0), -1); //Draw a green circle in the center of binary image
-        show_text(capture.img, check_move(posi_x, posi_y, x_scale, y_scale));
-
-        posi_x[1] = posi_x[0];
-        posi_y[1] = posi_y[0];
-
         imshow(imgshow_name, capture.img); //Show Original image
         imshow("Two", capture.src); // Show Binary image
     }
