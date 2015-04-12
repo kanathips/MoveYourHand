@@ -78,9 +78,11 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="include/hand_function.h" />
 		<Unit filename="include/image.h" />
 		<Unit filename="include/win_cre.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/hand_function.cpp" />
 		<Unit filename="src/image.cpp" />
 		<Unit filename="src/win_cre.cpp" />
 		<Extensions>

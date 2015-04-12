@@ -1,5 +1,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv/highgui.h>
 #include <image.h>
 #include <windows.h>
 #include <win_cre.h>
@@ -9,8 +10,6 @@
 
 using namespace cv;
 using namespace std;
-
-/**< Declare Window name *///
 
 const char *setwin_name = "HSV";
 const char *denois_winname = "Denois";
@@ -133,12 +132,21 @@ string check_move(int posi_x[2], int posi_y[2], int x_scale, int y_scale)
     return move_way;
 }
 
+bool fig_sort(const hand_function &fig_1, const hand_function &fig_2)
+{
+    return fig_1.start.x < fig_2.start.x;
+}
+
+void change_finger_order(vector<hand_function> fig_vec)
+{
+    sort(fig_vec.begin(), fig_vec.end(), fig_sort);
+}
 
 int main()
 {
-    int camera_no;
+    int camera_no, click = 0;
     Moments object_moment;
-    vector<Point> object;
+    vector<Point> object, finger_tip;
     int posi_x[2] = {0}, posi_y[2] = {0};
     while(1)
     {
@@ -153,19 +161,21 @@ int main()
     double y_scale = ceil(GetSystemMetrics(SM_CYSCREEN) / capture.width);
     double x_scale = ceil(GetSystemMetrics(SM_CXSCREEN) / capture.height);
     namedWindow(imgshow_name, WINDOW_AUTOSIZE); //create window named Original Image
+
     caribate_color(capture);
 
     while(waitKey(30) != 27) //loop until catch esc key
     {
         vector<hand_function> fig_vec;
-        capture.update(); //update Video frame (look at image.cpp)
+        capture.update();
         capture.cal_bin_img(capture.src, low_hsv, most_hsv); //convert HSV image to Binary image (capture.src is output argument)
         Canny(capture.src, capture.contour, 10, 10);
 
         hand_function hand_cal(capture.contour);
         hand_cal.find_hull();
-        hand_cal.find_figer(fig_vec);
-        hand_cal.draw(capture.img, fig_vec);
+        hand_cal.find_figer(fig_vec, finger_tip);
+        change_finger_order(fig_vec);
+        hand_cal.draw(capture.img, fig_vec, finger_tip);
         if(hand_cal.contours_ob.size() > 0)
         {
             object = hand_cal.bigest_object;
@@ -173,11 +183,35 @@ int main()
             posi_x[0] = object_moment.m10 / object_moment.m00; // find center of x axis
             posi_y[0] = object_moment.m01 / object_moment.m00; // find center of y axis
             if(posi_x[0] > 0 && posi_y[0] > 0)
+            {
               circle(capture.img, Point(posi_x[0], posi_y[0]), 10, Scalar(0, 255, 0), -1); //Draw a green circle in the center of binary image
+              //SetCursorPos((posi_x[0] - 100) * x_scale * 2, (posi_y[0] - 100) * y_scale * 3);
+            }
+            if(fig_vec.size() == 4 && click == 0)
+            {
+                mouse_event(MOUSEEVENTF_LEFTDOWN, posi_x[0], posi_y[0], 0, 0);
+                click = 1;
+            }
+            else if(fig_vec.size() == 3 && click == 0)
+            {
+                mouse_event(MOUSEEVENTF_RIGHTDOWN, posi_x[0], posi_y[0], 0, 0);
+                click = 2;
+            }
+            else if(fig_vec.size() != 4 && click == 1)
+            {
+                mouse_event(MOUSEEVENTF_LEFTUP, posi_x[0], posi_y[0], 0, 0);
+                click = 0;
+            }
+            else if(fig_vec.size() != 3 && click == 2)
+            {
+                mouse_event(MOUSEEVENTF_RIGHTUP, posi_x[0], posi_y[0], 0, 0);
+                click = 0;
+            }
             show_text(capture.img, check_move(posi_x, posi_y, x_scale, y_scale));
             posi_x[1] = posi_x[0];
             posi_y[1] = posi_y[0];
         }
+
         imshow(imgshow_name, capture.img); //Show Original image
         imshow("Two", capture.src); // Show Binary image
     }
