@@ -245,13 +245,13 @@
 
 1426472627 D
 
-1428851433 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\src\image.cpp
+1429195919 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\src\image.cpp
 	"image.h"
 	<win_cre.h>
 	<setting.h>
 	<iostream>
 
-1428415022 c:\users\newwy\documents\github\moveyourhand\moveyourhand\include\image.h
+1429195833 c:\users\newwy\documents\github\moveyourhand\moveyourhand\include\image.h
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 
@@ -265,7 +265,7 @@
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 
-1428855500 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\main.cpp
+1429195401 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\main.cpp
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 	<opencv/highgui.h>
@@ -570,11 +570,11 @@
 
 1384335861 ent of 56fa1fc... Add Function
 
-1428722366 c:\users\newwy\documents\github\moveyourhand\moveyourhand\include\hand_function.h
+1429153196 c:\users\newwy\documents\github\moveyourhand\moveyourhand\include\hand_function.h
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>
 
-1428852675 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\src\hand_function.cpp
+1429078854 source:c:\users\newwy\documents\github\moveyourhand\moveyourhand\src\hand_function.cpp
 	"hand_function.h"
 	<opencv2/imgproc/imgproc.hpp>
 	<opencv2/highgui/highgui.hpp>

@@ -8,7 +8,7 @@ using namespace cv;
 hand_function::hand_function(Mat bw_img)
 {
     int i, bigest_area = 0;
-    findContours(bw_img, contours_ob, RETR_TREE , CHAIN_APPROX_SIMPLE, Point(0, 0));
+    findContours(bw_img, contours_ob, RETR_TREE , CHAIN_APPROX_SIMPLE);
     if (contours_ob.size() > 0)
     {
         for(i = 0; i < contours_ob.size(); i++ )
@@ -83,18 +83,16 @@ void hand_function::set_property(hand_function &figer, vector<Vec4i>::iterator d
     }
 }
 
-void hand_function::find_figer(vector<hand_function> &fig_vec, vector<Point> &finger_tip)
+void hand_function::find_figer(vector<hand_function> &fig_vec)
 {
     if(contours_ob.size() > 0)
     {
-        int i = 1;
-        finger_tip.clear();
         vector<Vec4i>::iterator dec_ptr = defects[bigest_index].begin(); // pointer of first element
         while(dec_ptr != defects[bigest_index].end())
         {
             hand_function tmp;
             set_property(tmp, dec_ptr);
-            if((distance_point(tmp.farth, tmp.start) > boundRect.height / 5 || distance_point(tmp.farth, tmp.end) > boundRect.height / 5) && tmp.start.y < boundRect.y + (boundRect.height / 1.5))
+            if((distance_point(tmp.farth, tmp.start) > boundRect.height / 6 || distance_point(tmp.farth, tmp.end) > boundRect.height / 6) && tmp.start.y < boundRect.y + (boundRect.height / 1.5))
                fig_vec.push_back(tmp);
             dec_ptr++;
         }
@@ -106,7 +104,18 @@ void hand_function::show_text(Mat img, string text, Point posi)
 	putText(img, text, posi, FONT_HERSHEY_PLAIN, 2.0f,Scalar(0,0,255),2);
 }
 
-void hand_function::draw(Mat image, vector<hand_function> fig_vec, vector<Point> finger_tip)
+Point hand_function::find_middel()
+{
+    if(bigest_object.size() > 0)
+    {
+        Moments object_moment = moments(bigest_object);
+        double posi_x = object_moment.m10 / object_moment.m00;
+        double posi_y = object_moment.m01 / object_moment.m00;
+        return Point(posi_x, posi_y);
+    }
+}
+
+void hand_function::draw(Mat image, vector<hand_function> fig_vec)
 {
     if(contours_ob.size() > 0)
     {
@@ -119,9 +128,8 @@ void hand_function::draw(Mat image, vector<hand_function> fig_vec, vector<Point>
             circle(image, tmp.start, 3, Scalar(255, 0, 0), 3);
         }
         rectangle(image, boundRect, Scalar(255, 0, 0), 3);
-        char tmp[3];
-        sprintf(tmp, "%d", fig_vec.size());
+        char tmp[20];
+        sprintf(tmp, "Number of fingers %d", fig_vec.size());
         show_text(image, tmp, Point(20, 60));
-
     }
 }
